@@ -10,6 +10,8 @@ data:
   area: [31.0, 68.0, 25.0, 71.25]
   cache_areas: [[34.0, 67.0, 24.0, 74.0]]
   chirps_url: https://climateserv.servirglobal.net/api
+  era5_provider: open_meteo
+  era5_url: https://archive-api.open-meteo.com/v1/archive
   reaches:
     - {id: indus_taunsa, province: Punjab, latitude: 30.52, longitude: 70.85}
     - {id: indus_guddu, province: Sindh, latitude: 28.42, longitude: 69.71}

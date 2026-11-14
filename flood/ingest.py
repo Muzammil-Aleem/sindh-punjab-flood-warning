@@ -11,6 +11,7 @@ import xarray as xr
 
 from flood.common import config, digest, required, write_json
 from flood.rainfall import chirps_points
+from flood.weather import era5_points
 
 
 def download(url, target):
@@ -188,7 +189,8 @@ def ingest():
                 glofas, {"dis24": "discharge"}, data["reaches"], data["maximum_grid_distance"]
             )
         )
-    for month in dates.to_period("Y").unique():
+    weather_dates = dates if data.get("era5_provider", "cds") == "cds" else pd.DatetimeIndex([])
+    for month in weather_dates.to_period("Y").unique():
         selected = dates[dates.to_period("Y") == month]
         days = sorted(set(selected.strftime("%d")))
         shared = {
@@ -212,6 +214,10 @@ def ingest():
                 era5, {"t2m": "temperature", "swvl1": "soil_moisture"}, data["reaches"], 0.26
             )
         )
+    if data.get("era5_provider", "cds") == "open_meteo":
+        weather = [era5_points(data, raw)]
+    elif data.get("era5_provider", "cds") != "cds":
+        raise ValueError("Unsupported ERA5 provider")
     rainfall = chirps_points(data, raw)
     keys = ["date", "reach_id"]
     frame = pd.concat(discharge).merge(pd.concat(weather), on=keys, validate="one_to_one")
@@ -223,7 +229,13 @@ def ingest():
         {
             "sources": {
                 "glofas": "cems-glofas-historical",
-                "era5": "reanalysis-era5-single-levels",
+                "era5": {
+                    "dataset": "reanalysis-era5-single-levels",
+                    "provider": data.get("era5_provider", "cds"),
+                    "point_url": data.get("era5_url"),
+                    "model": "era5",
+                    "downscaling": False,
+                },
                 "chirps": data["chirps_url"],
                 "thresholds": data["threshold_url"],
             },

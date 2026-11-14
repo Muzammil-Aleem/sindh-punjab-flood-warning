@@ -81,7 +81,7 @@ def main():
         )
         paragraph(
             fig,
-            "GloFAS historical reanalysis and hourly ERA5 are retrieved using authenticated Copernicus APIs. CHIRPS daily point series are retrieved through ClimateSERV, and official GloFAS threshold grids are downloaded from ECMWF. GloFAS discharge is aligned to the preceding calendar day, matching its 24-hour averaging interval. The threshold file is pinned by URL version and SHA256.",
+            "GloFAS historical reanalysis is retrieved as GRIB through Copernicus. Hourly ERA5 temperature and topsoil moisture use Open-Meteo's ERA5 archive (https://open-meteo.com/en/docs/historical-weather-api), with ERA5 explicitly selected and elevation downscaling disabled. CHIRPS point series use ClimateSERV. Official ECMWF thresholds are pinned by URL version and SHA256. All observations are aligned to UTC calendar days.",
             0.59,
         )
         paragraph(

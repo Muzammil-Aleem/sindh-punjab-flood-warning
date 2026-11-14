@@ -32,16 +32,14 @@ def evaluate():
         horizons = {}
         for horizon, rows in test.groupby("horizon"):
             subset = probability[rows.index.to_numpy()]
-            if rows.label.nunique() != 2:
-                raise ValueError(f"Test horizon {horizon} requires both classes")
             horizons[str(horizon)] = metrics(rows.label, subset, record["threshold"])
+            horizons[str(horizon)].update(samples=len(rows), positive_samples=int(rows.label.sum()))
         reaches = {}
         for reach, rows in test.groupby("reach_id"):
-            if rows.label.nunique() != 2:
-                raise ValueError(f"Test reach {reach} requires both classes")
             reaches[reach] = metrics(
                 rows.label, probability[rows.index.to_numpy()], record["threshold"]
             )
+            reaches[reach].update(samples=len(rows), positive_samples=int(rows.label.sum()))
         result["models"][name] = {
             "test": scores,
             "per_horizon": horizons,
@@ -54,10 +52,20 @@ def evaluate():
             mlflow.log_metrics({f"test_{key}": value for key, value in scores.items()})
             for horizon, values in horizons.items():
                 mlflow.log_metrics(
-                    {f"test_h{horizon}_{key}": value for key, value in values.items()}
+                    {
+                        f"test_h{horizon}_{key}": value
+                        for key, value in values.items()
+                        if value is not None
+                    }
                 )
             for reach, values in reaches.items():
-                mlflow.log_metrics({f"test_{reach}_{key}": value for key, value in values.items()})
+                mlflow.log_metrics(
+                    {
+                        f"test_{reach}_{key}": value
+                        for key, value in values.items()
+                        if value is not None
+                    }
+                )
             for kind in ["precision_recall", "confusion_matrix"]:
                 fig, axis = plt.subplots(figsize=(6, 5))
                 if kind == "precision_recall":

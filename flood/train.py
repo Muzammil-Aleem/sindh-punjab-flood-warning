@@ -63,7 +63,9 @@ def metrics(y, probability, threshold=0.5):
         "f1": float(f1_score(y, prediction, zero_division=0)),
         "precision": float(precision_score(y, prediction, zero_division=0)),
         "recall": float(recall_score(y, prediction, zero_division=0)),
-        "pr_auc": float(average_precision_score(y, probability)),
+        "pr_auc": float(average_precision_score(y, probability))
+        if np.unique(y).size == 2
+        else None,
         "positive_fraction": float(np.mean(y)),
     }
 

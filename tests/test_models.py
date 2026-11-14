@@ -39,6 +39,13 @@ def test_persistence_uses_only_current_discharge():
     np.testing.assert_array_equal(model.predict(frame), [0, 1, 1])
 
 
+def test_single_class_subgroup_has_no_pr_auc():
+    result = metrics([0, 0, 0], [0.1, 0.2, 0.3])
+    assert result["pr_auc"] is None
+    assert result["positive_fraction"] == 0
+    assert result["f1"] == 0
+
+
 def test_registered_classifier_preserves_selected_threshold():
     frame = pd.DataFrame({"x": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]})
     estimator = LogisticRegression().fit(frame, [0, 0, 0, 0, 1, 1])

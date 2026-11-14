@@ -9,8 +9,8 @@ stages:
       size: 1275
     - path: flood/ingest.py
       hash: md5
-      md5: 09e8b3fb380924f8daa31e297a2dc390
-      size: 9579
+      md5: 6179bf6d2b076a6f2726f66f1f384d3f
+      size: 10180
     - path: flood/rainfall.py
       hash: md5
       md5: 17a322ed9f97dba291c9c102ad7a8383
@@ -19,6 +19,10 @@ stages:
       hash: md5
       md5: ac6b16198f1292c0c374e10397bd2043
       size: 1187
+    - path: flood/weather.py
+      hash: md5
+      md5: 624aa534294691cf2a865e72d9f9b2af
+      size: 3815
     - path: requirements.lock
       hash: md5
       md5: 2a470961af07fbcbce8ae266d45b7459
@@ -50,6 +54,8 @@ stages:
             - 24.0
             - 74.0
           chirps_url: https://climateserv.servirglobal.net/api
+          era5_provider: open_meteo
+          era5_url: https://archive-api.open-meteo.com/v1/archive
           reaches:
           - id: indus_taunsa
             province: Punjab
