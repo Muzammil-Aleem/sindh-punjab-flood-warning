@@ -8,7 +8,6 @@ import mlflow.sklearn
 import numpy as np
 import pandas as pd
 from mlflow.models import infer_signature
-from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import average_precision_score, f1_score, precision_score, recall_score
@@ -16,45 +15,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 from flood.common import config, digest, remote_uri, write_json
-
-
-class PersistenceClassifier(ClassifierMixin, BaseEstimator):
-    def fit(self, X, y=None):
-        self.classes_ = np.array([0, 1])
-        self.feature_names_in_ = np.asarray(X.columns, dtype=object)
-        self.n_features_in_ = X.shape[1]
-        return self
-
-    def predict_proba(self, X):
-        probability = (X["discharge"] >= X["threshold"]).to_numpy(dtype=float)
-        return np.column_stack([1 - probability, probability])
-
-    def predict(self, X):
-        return self.predict_proba(X)[:, 1].astype(int)
-
-
-class ThresholdClassifier(ClassifierMixin, BaseEstimator):
-    def __init__(self, estimator, threshold=0.5):
-        self.estimator = estimator
-        self.threshold = threshold
-
-    @property
-    def classes_(self):
-        return self.estimator.classes_
-
-    @property
-    def n_features_in_(self):
-        return self.estimator.n_features_in_
-
-    def fit(self, X, y):
-        self.estimator.fit(X, y)
-        return self
-
-    def predict_proba(self, X):
-        return self.estimator.predict_proba(X)
-
-    def predict(self, X):
-        return (self.predict_proba(X)[:, 1] >= self.threshold).astype(int)
+from flood.estimators import PersistenceClassifier, ThresholdClassifier
 
 
 def metrics(y, probability, threshold=0.5):

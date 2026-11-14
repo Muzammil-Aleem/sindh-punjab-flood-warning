@@ -41,6 +41,7 @@ def main():
     evaluation = json.loads(Path("reports/evaluation.json").read_text())
     registry = json.loads(Path("reports/registry.json").read_text())
     validation = json.loads(Path("reports/validation.json").read_text())
+    splits = json.loads(Path("reports/splits.json").read_text())
     evidence = Path("submission/evidence")
     capture = json.loads((evidence / "capture.json").read_text())
     viewer_note = ""
@@ -99,7 +100,7 @@ def main():
         fig = page("Features and experiment tracking", 2)
         paragraph(
             fig,
-            "The pipeline builds per-reach lag, rolling rainfall and discharge sums, discharge changes and seasonal features. It also exports 30-day, four-variable sequence tensors with five aligned labels for later temporal models. Chronological train, validation and test splits purge targets crossing split boundaries. Scalers fit only on training observations; decision thresholds and the winning trained classifier are selected on validation F1.",
+            f"The pipeline builds per-reach lag, rolling rainfall and discharge sums, discharge changes and seasonal features, plus 30-day sequence tensors with five labels. Training ends {splits['train']['last_target']}; validation ends {splits['validation']['last_target']}; testing begins {splits['test']['first_issue']}. Targets crossing split boundaries are purged. Scalers fit only on training data; decision thresholds and the winning classifier are selected on validation F1.",
             0.87,
         )
         screenshot(fig, evidence / "runs.png", [0.05, 0.28, 0.9, 0.42])
@@ -132,7 +133,7 @@ def main():
         table.scale(1, 1.8)
         paragraph(
             fig,
-            f"The validation-selected classifier is {registry['winner']}. Model {registry['name']}, version {registry['version']}, is verified in remote Staging. Its serialized classifier preserves the selected decision threshold ({registry['decision_threshold']:.2f}). Test results are also broken down by lead time and river reach.",
+            f"The validation-selected classifier is {registry['winner']}. Model {registry['name']}, version {registry['version']}, is verified in remote Staging. The serialized classifier preserves its decision threshold ({registry['decision_threshold']:.2f}). Test metrics include all five horizons. In 2022, only Kotri exceeds these fixed thresholds; per-reach reports include positive counts and mark PR-AUC undefined for single-class groups.",
             0.64,
         )
         screenshot(fig, evidence / "registry.png", [0.05, 0.12, 0.9, 0.39])

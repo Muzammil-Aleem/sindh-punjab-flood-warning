@@ -59,6 +59,7 @@ stages:
     cmd: python -m flood.train
     deps:
       - flood/train.py
+      - flood/estimators.py
       - flood/common.py
       - data/features
       - data/raw/manifest.json
@@ -88,7 +89,8 @@ stages:
       - reports/figures
       - reports/test_predictions.parquet
     metrics:
-      - reports/evaluation.json
+      - reports/evaluation.json:
+          cache: true
   register:
     cmd: python -m flood.register
     deps:

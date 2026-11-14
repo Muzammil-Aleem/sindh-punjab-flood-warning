@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
+import subprocess
+import sys
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
@@ -53,6 +55,35 @@ def test_registered_classifier_preserves_selected_threshold():
     probability = wrapper.predict_proba(frame)[:, 1]
     np.testing.assert_array_equal(wrapper.predict(frame), probability >= 0.25)
     assert not np.array_equal(wrapper.predict(frame), estimator.predict(frame))
+
+
+def test_command_entrypoint_models_load_in_another_process(tmp_path):
+    target = str(tmp_path / "model.joblib")
+    subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import runpy, joblib, pandas as pd, sys; "
+            "module = runpy.run_module('flood.train', run_name='serialization_probe'); "
+            "frame = pd.DataFrame({'discharge':[99,101], 'threshold':[100,100]}); "
+            "model = module['ThresholdClassifier'](module['PersistenceClassifier']().fit(frame)); "
+            "joblib.dump(model, sys.argv[1])",
+            target,
+        ],
+        check=True,
+    )
+    subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import joblib, pandas as pd, sys; "
+            "model = joblib.load(sys.argv[1]); "
+            "frame = pd.DataFrame({'discharge':[99,101], 'threshold':[100,100]}); "
+            "assert model.predict(frame).tolist() == [0,1]",
+            target,
+        ],
+        check=True,
+    )
 
 
 @pytest.mark.parametrize(

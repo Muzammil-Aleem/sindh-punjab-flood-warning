@@ -79,3 +79,281 @@ stages:
       md5: 87b6a0a9976132a511dfd4c77f090af6.dir
       size: 172894606
       nfiles: 3
+  ingest:
+    cmd: python -m flood.ingest
+    deps:
+    - path: data/auxiliary
+      hash: md5
+      md5: 87b6a0a9976132a511dfd4c77f090af6.dir
+      size: 172894606
+      nfiles: 3
+    - path: flood/common.py
+      hash: md5
+      md5: af9f68a5c83f2b0cb865d5792b929fa7
+      size: 1275
+    - path: flood/ingest.py
+      hash: md5
+      md5: 6179bf6d2b076a6f2726f66f1f384d3f
+      size: 10180
+    - path: flood/rainfall.py
+      hash: md5
+      md5: 17a322ed9f97dba291c9c102ad7a8383
+      size: 4268
+    - path: flood/weather.py
+      hash: md5
+      md5: 624aa534294691cf2a865e72d9f9b2af
+      size: 3815
+    - path: requirements.lock
+      hash: md5
+      md5: 2a470961af07fbcbce8ae266d45b7459
+      size: 2969
+    - path: requirements.txt
+      hash: md5
+      md5: acfbde3ffcf0a467840e61d5f1d690e2
+      size: 392
+    params:
+      params.yaml:
+        data:
+          start: '2010-01-01'
+          end: '2022-12-31'
+          glofas_version: version_4_0
+          threshold_return_period: 2
+          threshold_url: 
+            https://confluence.ecmwf.int/download/attachments/242067380/flood_threshold_glofas_v4_rl_2.0.nc?api=v2&modificationDate=1701769905627&version=1
+          threshold_variable: rl_2.0
+          threshold_sha256: e0e69028080ff0daa9df7ee68b9b01162ac42e03610d020217e3bfb0b44b7fa7
+          maximum_grid_distance: 0.1
+          area:
+          - 31.0
+          - 68.0
+          - 25.0
+          - 71.25
+          cache_areas:
+          - - 34.0
+            - 67.0
+            - 24.0
+            - 74.0
+          chirps_url: https://climateserv.servirglobal.net/api
+          era5_provider: open_meteo
+          era5_url: https://archive-api.open-meteo.com/v1/archive
+          reaches:
+          - id: indus_taunsa
+            province: Punjab
+            latitude: 30.52
+            longitude: 70.85
+          - id: indus_guddu
+            province: Sindh
+            latitude: 28.42
+            longitude: 69.71
+          - id: indus_sukkur
+            province: Sindh
+            latitude: 27.68
+            longitude: 68.85
+          - id: indus_kotri
+            province: Sindh
+            latitude: 25.44
+            longitude: 68.32
+    outs:
+    - path: data/raw
+      hash: md5
+      md5: 178d3a008181b8f52f52daea29561848.dir
+      size: 33132082
+      nfiles: 70
+  validate:
+    cmd: python -m flood.validate
+    deps:
+    - path: data/auxiliary
+      hash: md5
+      md5: 87b6a0a9976132a511dfd4c77f090af6.dir
+      size: 172894606
+      nfiles: 3
+    - path: data/raw
+      hash: md5
+      md5: 178d3a008181b8f52f52daea29561848.dir
+      size: 33132082
+      nfiles: 70
+    - path: flood/common.py
+      hash: md5
+      md5: af9f68a5c83f2b0cb865d5792b929fa7
+      size: 1275
+    - path: flood/validate.py
+      hash: md5
+      md5: 7024e4fcae1b3ea60cf66842215f0bf5
+      size: 4311
+    params:
+      params.yaml:
+        data:
+          start: '2010-01-01'
+          end: '2022-12-31'
+          glofas_version: version_4_0
+          threshold_return_period: 2
+          threshold_url: 
+            https://confluence.ecmwf.int/download/attachments/242067380/flood_threshold_glofas_v4_rl_2.0.nc?api=v2&modificationDate=1701769905627&version=1
+          threshold_variable: rl_2.0
+          threshold_sha256: e0e69028080ff0daa9df7ee68b9b01162ac42e03610d020217e3bfb0b44b7fa7
+          maximum_grid_distance: 0.1
+          area:
+          - 31.0
+          - 68.0
+          - 25.0
+          - 71.25
+          cache_areas:
+          - - 34.0
+            - 67.0
+            - 24.0
+            - 74.0
+          chirps_url: https://climateserv.servirglobal.net/api
+          era5_provider: open_meteo
+          era5_url: https://archive-api.open-meteo.com/v1/archive
+          reaches:
+          - id: indus_taunsa
+            province: Punjab
+            latitude: 30.52
+            longitude: 70.85
+          - id: indus_guddu
+            province: Sindh
+            latitude: 28.42
+            longitude: 69.71
+          - id: indus_sukkur
+            province: Sindh
+            latitude: 27.68
+            longitude: 68.85
+          - id: indus_kotri
+            province: Sindh
+            latitude: 25.44
+            longitude: 68.32
+        validation:
+          discharge_max: 150000.0
+          rainfall_max: 2000.0
+          temperature_min: 220.0
+          temperature_max: 340.0
+          soil_moisture_max: 1.0
+    outs:
+    - path: data/validated
+      hash: md5
+      md5: 62f8f52e8db1cd30529302a43c9a3dd5.dir
+      size: 305959
+      nfiles: 2
+    - path: reports/validation.json
+      hash: md5
+      md5: d77cef7974bafcf9d85ded9c5d720bc8
+      size: 295
+  features:
+    cmd: python -m flood.features
+    deps:
+    - path: data/validated
+      hash: md5
+      md5: 62f8f52e8db1cd30529302a43c9a3dd5.dir
+      size: 305959
+      nfiles: 2
+    - path: flood/common.py
+      hash: md5
+      md5: af9f68a5c83f2b0cb865d5792b929fa7
+      size: 1275
+    - path: flood/features.py
+      hash: md5
+      md5: c324184f09621c030506416828594a29
+      size: 6022
+    - path: flood/validate.py
+      hash: md5
+      md5: 7024e4fcae1b3ea60cf66842215f0bf5
+      size: 4311
+    params:
+      params.yaml:
+        features:
+          lags:
+          - 1
+          - 2
+          - 3
+          - 7
+          - 14
+          - 30
+          rolling_windows:
+          - 3
+          - 7
+          - 14
+          - 30
+          horizons:
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          sequence_length: 30
+        split:
+          train_end: '2014-12-31'
+          validation_end: '2021-12-31'
+    outs:
+    - path: data/features
+      hash: md5
+      md5: 9c1622564cf2bfb755560bd066c37224.dir
+      size: 6342315
+      nfiles: 10
+    - path: reports/splits.json
+      hash: md5
+      md5: 57e85bb730ef31d032372756b452c8b4
+      size: 440
+  train:
+    cmd: python -m flood.train
+    deps:
+    - path: data/features
+      hash: md5
+      md5: 9c1622564cf2bfb755560bd066c37224.dir
+      size: 6342315
+      nfiles: 10
+    - path: data/raw/manifest.json
+      hash: md5
+      md5: 768f65bf8019e98eb4a1733d95d5ae7a
+      size: 10711
+    - path: flood/common.py
+      hash: md5
+      md5: af9f68a5c83f2b0cb865d5792b929fa7
+      size: 1275
+    - path: flood/train.py
+      hash: md5
+      md5: 04c9b9693ca1e24086d83bf4a97c8463
+      size: 7194
+    - path: reports/splits.json
+      hash: md5
+      md5: 57e85bb730ef31d032372756b452c8b4
+      size: 440
+    - path: reports/validation.json
+      hash: md5
+      md5: d77cef7974bafcf9d85ded9c5d720bc8
+      size: 295
+    - path: requirements.lock
+      hash: md5
+      md5: 2a470961af07fbcbce8ae266d45b7459
+      size: 2969
+    - path: requirements.txt
+      hash: md5
+      md5: acfbde3ffcf0a467840e61d5f1d690e2
+      size: 392
+    params:
+      params.yaml:
+        models:
+          seed: 42
+          logistic_regression:
+            C: 1.0
+            max_iter: 2000
+          random_forest:
+            n_estimators: 250
+            max_depth: 12
+            min_samples_leaf: 5
+        split:
+          train_end: '2014-12-31'
+          validation_end: '2021-12-31'
+        tracking:
+          experiment: sindh-punjab-flood-warning
+          registered_model: sindh-punjab-flood-warning
+          stage: Staging
+    outs:
+    - path: models
+      hash: md5
+      md5: 838809817b7397839332c004153aedb9.dir
+      size: 3150320
+      nfiles: 3
+    - path: reports/training.json
+      hash: md5
+      md5: b4821fd61b7f82026019a50494f1ffd2
+      size: 1264
