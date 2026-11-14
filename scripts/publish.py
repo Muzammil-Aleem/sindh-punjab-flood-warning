@@ -36,6 +36,7 @@ def main():
         if current.returncode:
             run("git", "config", "--local", field, value)
     paths = [
+        "README.md",
         ".env.example",
         ".python-version",
         ".gitignore",
@@ -52,6 +53,8 @@ def main():
         "flood",
         "scripts",
         "tests",
+        "submission/flood-warning.pdf",
+        "submission/flood-warning.docx",
     ]
     run("git", "add", "--", *paths)
     staged = run(

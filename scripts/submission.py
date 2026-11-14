@@ -29,7 +29,7 @@ def paragraph(fig, value, y, size=10, url=None):
 
 def page(title, number):
     fig = plt.figure(figsize=(8.27, 11.69))
-    fig.text(0.08, 0.94, title, fontsize=18, weight="bold", va="top")
+    fig.text(0.08, 0.94, title, fontsize=18, weight="bold", va="top", color="#1f4e79")
     fig.text(0.92, 0.04, str(number), fontsize=9, ha="right")
     return fig
 
@@ -83,25 +83,37 @@ def main():
         dagshub = tracking.removesuffix(".mlflow")
         paragraph(fig, dagshub, 0.83, url=dagshub)
         paragraph(fig, tracking, 0.79, url=tracking)
+        fig.text(0.08, 0.755, "Group members", fontsize=11, weight="bold", color="#1f4e79")
+        members_axis = fig.add_axes([0.08, 0.65, 0.84, 0.08])
+        members_axis.axis("off")
+        members_table = members_axis.table(
+            cellText=[["", ""] for _ in range(4)],
+            colLabels=["Name", "Roll No."],
+            cellLoc="left",
+            colWidths=[0.7, 0.3],
+            bbox=[0, 0, 1, 1],
+        )
+        members_table.auto_set_font_size(False)
+        members_table.set_fontsize(8)
         paragraph(
             fig,
             f"The core pipeline processes daily discharge, rainfall, temperature and soil moisture for {validation['reaches']} Indus river reaches. The validated dataset contains {validation['rows']} reach-day records spanning {validation['start']} to {validation['end']}. Predictions classify GloFAS two-year discharge threshold exceedances at exact lead times of three through seven days.",
-            0.72,
+            0.62,
         )
         paragraph(
             fig,
             "GloFAS historical reanalysis is retrieved as GRIB through Copernicus. Hourly ERA5 temperature and topsoil moisture use Open-Meteo's ERA5 archive (https://open-meteo.com/en/docs/historical-weather-api), with ERA5 explicitly selected and elevation downscaling disabled. CHIRPS point series use ClimateSERV. Official ECMWF thresholds are pinned by URL version and SHA256. All observations are aligned to UTC calendar days.",
-            0.59,
+            0.49,
         )
         paragraph(
             fig,
             "Validation rejects schema changes, missing or infinite observations, duplicate reach-days, gaps in daily coverage, invalid physical ranges and inconsistent threshold versions. Source point observations, validated series, engineered datasets and trained artifacts are tracked as DVC pipeline outputs. Original GRIB archives are retained in a reusable download cache and fingerprinted in the source manifest; credentials, data and model weights are excluded from Git.",
-            0.41,
+            0.34,
         )
         paragraph(
             fig,
             "This is a retrospective classification study using reanalysis and model-derived labels. Its results do not establish operational warning skill or agreement with independently observed inundation. A comparison against archived GloFAS forecasts remains outside this core deliverable.",
-            0.23,
+            0.18,
         )
         pdf.savefig(fig)
         plt.close(fig)

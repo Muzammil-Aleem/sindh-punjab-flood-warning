@@ -1,4 +1,4 @@
-.PHONY: install bootstrap configure check test lint run push dag evidence evidence-tools submission publish
+.PHONY: install bootstrap configure check test lint run push dag evidence evidence-tools submission document publish
 .DEFAULT_GOAL := install
 
 export PATH := $(CURDIR)/.venv/bin:$(PATH)
@@ -47,6 +47,9 @@ dag:
 
 submission:
 	$(PYTHON) scripts/submission.py
+
+document: evidence-tools
+	.browser-tools/bin/python scripts/document.py
 
 publish:
 	$(PYTHON) scripts/publish.py
