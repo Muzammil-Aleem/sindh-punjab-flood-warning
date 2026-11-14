@@ -1,0 +1,43 @@
+data:
+  start: '2017-01-01'
+  end: '2022-12-31'
+  glofas_version: version_4_0
+  threshold_return_period: 2
+  threshold_url: https://confluence.ecmwf.int/download/attachments/242067380/flood_threshold_glofas_v4_rl_2.0.nc?api=v2&modificationDate=1701769905627&version=1
+  threshold_variable: rl_2.0
+  threshold_sha256: e0e69028080ff0daa9df7ee68b9b01162ac42e03610d020217e3bfb0b44b7fa7
+  maximum_grid_distance: 0.1
+  area: [34.0, 67.0, 24.0, 74.0]
+  chirps_url: https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_daily/tifs/p05
+  reaches:
+    - {id: indus_taunsa, province: Punjab, latitude: 30.52, longitude: 70.85}
+    - {id: indus_guddu, province: Sindh, latitude: 28.42, longitude: 69.71}
+    - {id: indus_sukkur, province: Sindh, latitude: 27.68, longitude: 68.85}
+    - {id: indus_kotri, province: Sindh, latitude: 25.44, longitude: 68.32}
+validation:
+  discharge_max: 150000.0
+  rainfall_max: 2000.0
+  temperature_min: 220.0
+  temperature_max: 340.0
+  soil_moisture_max: 1.0
+features:
+  lags: [1, 2, 3, 7, 14, 30]
+  rolling_windows: [3, 7, 14, 30]
+  horizons: [3, 4, 5, 6, 7]
+  sequence_length: 30
+split:
+  train_end: '2019-12-31'
+  validation_end: '2021-12-31'
+models:
+  seed: 42
+  logistic_regression:
+    C: 1.0
+    max_iter: 2000
+  random_forest:
+    n_estimators: 250
+    max_depth: 12
+    min_samples_leaf: 5
+tracking:
+  experiment: sindh-punjab-flood-warning
+  registered_model: sindh-punjab-flood-warning
+  stage: Staging

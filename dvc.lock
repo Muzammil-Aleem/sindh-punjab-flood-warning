@@ -1,0 +1,66 @@
+schema: '2.0'
+stages:
+  thresholds:
+    cmd: python -m flood.thresholds
+    deps:
+    - path: flood/common.py
+      hash: md5
+      md5: af9f68a5c83f2b0cb865d5792b929fa7
+      size: 1275
+    - path: flood/ingest.py
+      hash: md5
+      md5: a78f140d2ef09638ef9ab48bb5285fbf
+      size: 9685
+    - path: flood/thresholds.py
+      hash: md5
+      md5: ac6b16198f1292c0c374e10397bd2043
+      size: 1187
+    - path: requirements.lock
+      hash: md5
+      md5: 1bda57555364bbb6944b462bbfaec0df
+      size: 2992
+    - path: requirements.txt
+      hash: md5
+      md5: 4ef76708a2889a957a468d5fc51ea495
+      size: 373
+    params:
+      params.yaml:
+        data:
+          start: '2017-01-01'
+          end: '2022-12-31'
+          glofas_version: version_4_0
+          threshold_return_period: 2
+          threshold_url: 
+            https://confluence.ecmwf.int/download/attachments/242067380/flood_threshold_glofas_v4_rl_2.0.nc?api=v2&modificationDate=1701769905627&version=1
+          threshold_variable: rl_2.0
+          threshold_sha256: e0e69028080ff0daa9df7ee68b9b01162ac42e03610d020217e3bfb0b44b7fa7
+          maximum_grid_distance: 0.1
+          area:
+          - 34.0
+          - 67.0
+          - 24.0
+          - 74.0
+          chirps_url: https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_daily/tifs/p05
+          reaches:
+          - id: indus_taunsa
+            province: Punjab
+            latitude: 30.52
+            longitude: 70.85
+          - id: indus_guddu
+            province: Sindh
+            latitude: 28.42
+            longitude: 69.71
+          - id: indus_sukkur
+            province: Sindh
+            latitude: 27.68
+            longitude: 68.85
+          - id: indus_kotri
+            province: Sindh
+            latitude: 25.44
+            longitude: 68.32
+    outs:
+    - path: data/auxiliary
+      hash: md5
+      md5: 87b6a0a9976132a511dfd4c77f090af6.dir
+      size: 172894606
+      nfiles: 3

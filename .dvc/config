@@ -1,0 +1,5 @@
+[core]
+    analytics = false
+    remote = storage
+['remote "storage"']
+    url = https://dagshub.com/Muzammil-Aleem/sindh-punjab-flood-warning.dvc

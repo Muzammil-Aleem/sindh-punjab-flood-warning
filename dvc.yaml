@@ -1,0 +1,100 @@
+stages:
+  thresholds:
+    cmd: python -m flood.thresholds
+    deps:
+      - flood/thresholds.py
+      - flood/ingest.py
+      - flood/common.py
+      - requirements.txt
+      - requirements.lock
+    params:
+      - data
+    outs:
+      - data/auxiliary:
+          persist: true
+  ingest:
+    cmd: python -m flood.ingest
+    deps:
+      - flood/ingest.py
+      - flood/common.py
+      - requirements.txt
+      - requirements.lock
+      - data/auxiliary
+    params:
+      - data
+    outs:
+      - data/raw:
+          persist: true
+  validate:
+    cmd: python -m flood.validate
+    deps:
+      - flood/validate.py
+      - flood/common.py
+      - data/raw
+      - data/auxiliary
+    params:
+      - data
+      - validation
+    outs:
+      - data/validated
+      - reports/validation.json
+  features:
+    cmd: python -m flood.features
+    deps:
+      - flood/features.py
+      - flood/validate.py
+      - flood/common.py
+      - data/validated
+    params:
+      - features
+      - split
+    outs:
+      - data/features
+      - reports/splits.json
+  train:
+    cmd: python -m flood.train
+    deps:
+      - flood/train.py
+      - flood/common.py
+      - data/features
+      - data/raw/manifest.json
+      - reports/validation.json
+      - reports/splits.json
+      - requirements.txt
+      - requirements.lock
+    params:
+      - models
+      - split
+      - tracking
+    outs:
+      - models
+      - reports/training.json
+  evaluate:
+    cmd: python -m flood.evaluate
+    deps:
+      - flood/evaluate.py
+      - flood/train.py
+      - flood/common.py
+      - data/features
+      - models
+      - reports/training.json
+    params:
+      - tracking
+    outs:
+      - reports/figures
+      - reports/test_predictions.parquet
+    metrics:
+      - reports/evaluation.json
+  register:
+    cmd: python -m flood.register
+    deps:
+      - flood/register.py
+      - flood/train.py
+      - flood/common.py
+      - reports/training.json
+      - reports/evaluation.json
+    params:
+      - tracking
+    outs:
+      - reports/registry.json:
+          cache: false
