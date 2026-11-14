@@ -86,7 +86,9 @@ def main():
         headers={"Authorization": "Basic " + authorization},
     )
     with urllib.request.urlopen(request, timeout=60) as response:
-        experiment_id = json.load(response)["run"]["info"]["experiment_id"]
+        hosted_run = json.load(response)["run"]
+        experiment_id = hosted_run["info"]["experiment_id"]
+        tags = {tag["key"]: tag["value"] for tag in hosted_run["data"]["tags"]}
     destination = root / "submission/evidence"
     destination.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as playwright:
@@ -127,7 +129,22 @@ def main():
             print("Using the official MLflow frontend with the hosted DagsHub APIs", flush=True)
         page.get_by_text("persistence", exact=False).first.wait_for(timeout=120000)
         page.get_by_text("random_forest", exact=False).first.wait_for(timeout=120000)
-        page.screenshot(path=str(destination / "runs.png"), full_page=True)
+        search = page.get_by_placeholder('metrics.rmse < 1 and params.model = "tree"')
+        search.fill(f"tags.git_commit = '{tags['git_commit']}'")
+        search.press("Enter")
+        page.get_by_text("3 matching runs", exact=True).wait_for(timeout=120000)
+        page.get_by_role("button", name="Columns", exact=False).click()
+        for attribute in ["Dataset", "Source", "Models"]:
+            page.get_by_text(attribute, exact=True).last.click()
+        columns = page.get_by_placeholder("Search columns")
+        for metric in ["validation_f1", "test_f1", "test_pr_auc", "test_recall"]:
+            columns.fill(metric)
+            page.get_by_text(metric, exact=True).last.click()
+        page.keyboard.press("Escape")
+        page.mouse.click(1100, 145)
+        columns.wait_for(state="hidden")
+        page.set_viewport_size({"width": 1600, "height": 700})
+        page.screenshot(path=str(destination / "runs.png"), full_page=True, animations="disabled")
         model = urllib.parse.quote(registry["name"], safe="")
         page.goto(
             base + f"/#/models/{model}/versions/{registry['version']}",
@@ -135,7 +152,14 @@ def main():
             timeout=120000,
         )
         page.get_by_text("Staging", exact=False).first.wait_for(timeout=120000)
-        page.screenshot(path=str(destination / "registry.png"), full_page=True)
+        dialog = page.get_by_role("dialog")
+        if dialog.count():
+            dialog.get_by_role("button", name="Close", exact=True).click()
+            dialog.wait_for(state="hidden")
+            page.locator('[class*="modal-mask"]').wait_for(state="hidden")
+        page.screenshot(
+            path=str(destination / "registry.png"), full_page=True, animations="disabled"
+        )
         command = subprocess.run(
             [str(root / ".venv/bin/dvc"), "dag"],
             cwd=root,
@@ -145,9 +169,9 @@ def main():
         )
         diagram = html.escape("$ dvc dag\n\n" + command.stdout)
         page.set_content(
-            f"<html><body style='margin:40px;background:#111827;color:#f9fafb'><pre style='font-size:20px;line-height:1.1'>{diagram}</pre></body></html>"
+            f"<html><body style='margin:40px;background:#111827;color:#f9fafb'><pre style='display:inline-block;padding:20px;font-size:20px;line-height:1.1'>{diagram}</pre></body></html>"
         )
-        page.screenshot(path=str(destination / "dvc_dag.png"), full_page=True)
+        page.locator("pre").screenshot(path=str(destination / "dvc_dag.png"))
         browser.close()
     (destination / "capture.json").write_text(
         json.dumps(

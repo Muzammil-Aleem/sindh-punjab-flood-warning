@@ -15,9 +15,15 @@ from flood.common import remote_uri
 plt.switch_backend("Agg")
 
 
-def paragraph(fig, value, y, size=10):
+def paragraph(fig, value, y, size=10, url=None):
     fig.text(
-        0.08, y, "\n".join(textwrap.wrap(value, width=95)), va="top", fontsize=size, linespacing=1.5
+        0.08,
+        y,
+        "\n".join(textwrap.wrap(value, width=95)),
+        va="top",
+        fontsize=size,
+        linespacing=1.5,
+        url=url,
     )
 
 
@@ -73,12 +79,14 @@ def main():
     destination = Path("submission/flood-warning.pdf")
     with PdfPages(destination) as pdf:
         fig = page("Flood Early Warning: Sindh and Punjab", 1)
-        paragraph(fig, github, 0.87)
-        paragraph(fig, tracking, 0.82)
+        paragraph(fig, github, 0.87, url=github)
+        dagshub = tracking.removesuffix(".mlflow")
+        paragraph(fig, dagshub, 0.83, url=dagshub)
+        paragraph(fig, tracking, 0.79, url=tracking)
         paragraph(
             fig,
             f"The core pipeline processes daily discharge, rainfall, temperature and soil moisture for {validation['reaches']} Indus river reaches. The validated dataset contains {validation['rows']} reach-day records spanning {validation['start']} to {validation['end']}. Predictions classify GloFAS two-year discharge threshold exceedances at exact lead times of three through seven days.",
-            0.75,
+            0.72,
         )
         paragraph(
             fig,
@@ -133,7 +141,7 @@ def main():
         table.scale(1, 1.8)
         paragraph(
             fig,
-            f"The validation-selected classifier is {registry['winner']}. Model {registry['name']}, version {registry['version']}, is verified in remote Staging. The serialized classifier preserves its decision threshold ({registry['decision_threshold']:.2f}). Test metrics include all five horizons. In 2022, only Kotri exceeds these fixed thresholds; per-reach reports include positive counts and mark PR-AUC undefined for single-class groups.",
+            f"The validation-selected classifier is {registry['winner']}. Model {registry['name']}, version {registry['version']}, is verified in remote Staging, preserving decision threshold {registry['decision_threshold']:.2f}. Persistence outperforms the registered classifier on 2022 test F1 ({evaluation['models']['persistence']['test']['f1']:.3f} versus {evaluation['models'][registry['winner']]['test']['f1']:.3f}); promotion uses validation results. Only Kotri exceeds the fixed thresholds in 2022. Per-reach reports mark PR-AUC undefined for single-class groups.",
             0.64,
         )
         screenshot(fig, evidence / "registry.png", [0.05, 0.12, 0.9, 0.39])

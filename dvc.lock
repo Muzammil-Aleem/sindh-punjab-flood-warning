@@ -309,10 +309,14 @@ stages:
       hash: md5
       md5: af9f68a5c83f2b0cb865d5792b929fa7
       size: 1275
+    - path: flood/estimators.py
+      hash: md5
+      md5: bb9add93b534fa5640347bca0cb5c019
+      size: 1206
     - path: flood/train.py
       hash: md5
-      md5: 04c9b9693ca1e24086d83bf4a97c8463
-      size: 7194
+      md5: 65f0e0f1f13884ca448b725b4a0c96c9
+      size: 6079
     - path: reports/splits.json
       hash: md5
       md5: 57e85bb730ef31d032372756b452c8b4
@@ -350,10 +354,93 @@ stages:
     outs:
     - path: models
       hash: md5
-      md5: 838809817b7397839332c004153aedb9.dir
-      size: 3150320
+      md5: 4c3f803e1f54cfae4272a374437d5395.dir
+      size: 3150336
       nfiles: 3
     - path: reports/training.json
       hash: md5
-      md5: b4821fd61b7f82026019a50494f1ffd2
+      md5: 2c4e62f049e41767aa086372a4c8ad46
       size: 1264
+  evaluate:
+    cmd: python -m flood.evaluate
+    deps:
+    - path: data/features
+      hash: md5
+      md5: 9c1622564cf2bfb755560bd066c37224.dir
+      size: 6342315
+      nfiles: 10
+    - path: flood/common.py
+      hash: md5
+      md5: af9f68a5c83f2b0cb865d5792b929fa7
+      size: 1275
+    - path: flood/evaluate.py
+      hash: md5
+      md5: ba95707a29e651936d7a00dd06b8b634
+      size: 4021
+    - path: flood/train.py
+      hash: md5
+      md5: 65f0e0f1f13884ca448b725b4a0c96c9
+      size: 6079
+    - path: models
+      hash: md5
+      md5: 4c3f803e1f54cfae4272a374437d5395.dir
+      size: 3150336
+      nfiles: 3
+    - path: reports/training.json
+      hash: md5
+      md5: 2c4e62f049e41767aa086372a4c8ad46
+      size: 1264
+    params:
+      params.yaml:
+        tracking:
+          experiment: sindh-punjab-flood-warning
+          registered_model: sindh-punjab-flood-warning
+          stage: Staging
+    outs:
+    - path: reports/evaluation.json
+      hash: md5
+      md5: 57f4f7bd7fa9f73c3a67a485035222f2
+      size: 9240
+    - path: reports/figures
+      hash: md5
+      md5: c340a0c2762314e5018724648c0879c8.dir
+      size: 209389
+      nfiles: 6
+    - path: reports/test_predictions.parquet
+      hash: md5
+      md5: cbe5b1b8609a9d83f04a73bf73257707
+      size: 94547
+  register:
+    cmd: python -m flood.register
+    deps:
+    - path: flood/common.py
+      hash: md5
+      md5: af9f68a5c83f2b0cb865d5792b929fa7
+      size: 1275
+    - path: flood/register.py
+      hash: md5
+      md5: e3bf7bdf40db246ebc68f374122cfb35
+      size: 1830
+    - path: flood/train.py
+      hash: md5
+      md5: 65f0e0f1f13884ca448b725b4a0c96c9
+      size: 6079
+    - path: reports/evaluation.json
+      hash: md5
+      md5: 57f4f7bd7fa9f73c3a67a485035222f2
+      size: 9240
+    - path: reports/training.json
+      hash: md5
+      md5: 2c4e62f049e41767aa086372a4c8ad46
+      size: 1264
+    params:
+      params.yaml:
+        tracking:
+          experiment: sindh-punjab-flood-warning
+          registered_model: sindh-punjab-flood-warning
+          stage: Staging
+    outs:
+    - path: reports/registry.json
+      hash: md5
+      md5: a0b62c4df85e3ec763f83b13e49bc99f
+      size: 205

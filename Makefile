@@ -51,7 +51,7 @@ submission:
 publish:
 	$(PYTHON) scripts/publish.py
 
-.browser-tools/bin/python: .venv
+.browser-tools/bin/python: | .venv
 	$(UV) venv --python $(PYTHON) .browser-tools
 
 evidence-tools: .browser-tools/bin/python
