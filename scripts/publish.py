@@ -37,6 +37,7 @@ def main():
             run("git", "config", "--local", field, value)
     paths = [
         ".env.example",
+        ".python-version",
         ".gitignore",
         ".dvc",
         ".dvcignore",
@@ -47,6 +48,7 @@ def main():
         "pyproject.toml",
         "requirements.txt",
         "requirements.lock",
+        "requirements-evidence.txt",
         "flood",
         "scripts",
         "tests",

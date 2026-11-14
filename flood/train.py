@@ -104,6 +104,11 @@ def train():
     commit = subprocess.run(
         ["git", "rev-parse", "HEAD"], capture_output=True, text=True
     ).stdout.strip()
+    dirty = bool(
+        subprocess.run(
+            ["git", "status", "--porcelain"], capture_output=True, text=True
+        ).stdout.strip()
+    )
     for name, estimator in candidates.items():
         with mlflow.start_run(run_name=name) as run:
             mlflow.set_tags(
@@ -111,6 +116,7 @@ def train():
                     "model_family": name,
                     "dataset_sha256": digest("data/features/train.parquet"),
                     "git_commit": commit or "uncommitted",
+                    "git_dirty": str(dirty).lower(),
                     "label_source": "GloFAS_reanalysis_return_period_exceedance",
                     "selection_split": "validation",
                 }
@@ -161,6 +167,9 @@ def train():
             mlflow.log_artifact("params.yaml")
             mlflow.log_artifact("requirements.txt")
             mlflow.log_artifact("requirements.lock")
+            mlflow.log_artifact(".python-version")
+            mlflow.log_artifact("dvc.yaml")
+            mlflow.log_artifact("dvc.lock")
             mlflow.log_artifact("data/features/schema.json")
             mlflow.log_artifact("data/raw/manifest.json")
             mlflow.log_artifact("reports/validation.json")

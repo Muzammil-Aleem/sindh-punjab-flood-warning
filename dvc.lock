@@ -9,20 +9,24 @@ stages:
       size: 1275
     - path: flood/ingest.py
       hash: md5
-      md5: a78f140d2ef09638ef9ab48bb5285fbf
-      size: 9685
+      md5: 586511a432f1598419fb95e0cf233a38
+      size: 8451
+    - path: flood/rainfall.py
+      hash: md5
+      md5: 17a322ed9f97dba291c9c102ad7a8383
+      size: 4268
     - path: flood/thresholds.py
       hash: md5
       md5: ac6b16198f1292c0c374e10397bd2043
       size: 1187
     - path: requirements.lock
       hash: md5
-      md5: 1bda57555364bbb6944b462bbfaec0df
-      size: 2992
+      md5: 2a470961af07fbcbce8ae266d45b7459
+      size: 2969
     - path: requirements.txt
       hash: md5
-      md5: 4ef76708a2889a957a468d5fc51ea495
-      size: 373
+      md5: acfbde3ffcf0a467840e61d5f1d690e2
+      size: 392
     params:
       params.yaml:
         data:
@@ -40,7 +44,7 @@ stages:
           - 67.0
           - 24.0
           - 74.0
-          chirps_url: https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_daily/tifs/p05
+          chirps_url: https://climateserv.servirglobal.net/api
           reaches:
           - id: indus_taunsa
             province: Punjab

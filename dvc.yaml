@@ -4,6 +4,7 @@ stages:
     deps:
       - flood/thresholds.py
       - flood/ingest.py
+      - flood/rainfall.py
       - flood/common.py
       - requirements.txt
       - requirements.lock
@@ -16,6 +17,7 @@ stages:
     cmd: python -m flood.ingest
     deps:
       - flood/ingest.py
+      - flood/rainfall.py
       - flood/common.py
       - requirements.txt
       - requirements.lock

@@ -1,18 +1,16 @@
-import gzip
 import hashlib
 import json
-import shutil
 from pathlib import Path
 
 import cdsapi
 import cfgrib
 import numpy as np
 import pandas as pd
-import rasterio
 import requests
 import xarray as xr
 
 from flood.common import config, digest, required, write_json
+from flood.rainfall import chirps_points
 
 
 def download(url, target):
@@ -131,16 +129,14 @@ def ingest():
     cds = cdsapi.Client(url="https://cds.climate.copernicus.eu/api", key=required("CDSAPI_KEY"))
     ewds = cdsapi.Client(url="https://ewds.climate.copernicus.eu/api", key=required("EWDS_API_KEY"))
     dates = pd.date_range(data["start"], data["end"], freq="D")
-    discharge, weather, rainfall = [], [], []
-    discharge_dates = pd.date_range(
-        pd.Timestamp(data["start"]) + pd.Timedelta(days=1),
-        pd.Timestamp(data["end"]) + pd.Timedelta(days=1),
-    )
-    for month in discharge_dates.to_period("M").unique():
-        days = discharge_dates[discharge_dates.to_period("M") == month].strftime("%d").tolist()
+    discharge, weather = [], []
+    discharge_dates = dates
+    for month in discharge_dates.to_period("Y").unique():
+        selected = discharge_dates[discharge_dates.to_period("Y") == month]
+        days = sorted(set(selected.strftime("%d")))
         shared = {
             "year": [str(month.year)],
-            "month": [f"{month.month:02d}"],
+            "month": sorted(set(selected.strftime("%m"))),
             "day": days,
             "area": data["area"],
             "data_format": "grib",
@@ -161,11 +157,12 @@ def ingest():
                 glofas, {"dis24": "discharge"}, data["reaches"], data["maximum_grid_distance"]
             )
         )
-    for month in dates.to_period("M").unique():
-        days = dates[dates.to_period("M") == month].strftime("%d").tolist()
+    for month in dates.to_period("Y").unique():
+        selected = dates[dates.to_period("Y") == month]
+        days = sorted(set(selected.strftime("%d")))
         shared = {
             "year": [str(month.year)],
-            "month": [f"{month.month:02d}"],
+            "month": sorted(set(selected.strftime("%m"))),
             "day": days,
             "area": data["area"],
             "data_format": "grib",
@@ -184,31 +181,10 @@ def ingest():
                 era5, {"t2m": "temperature", "swvl1": "soil_moisture"}, data["reaches"], 0.26
             )
         )
-    for date in dates:
-        name = f"chirps-v2.0.{date:%Y.%m.%d}.tif"
-        source_signature = hashlib.sha256(data["chirps_url"].encode()).hexdigest()[:16]
-        compressed = raw / (source_signature + "-" + name + ".gz")
-        raster = raw / name
-        if not compressed.exists():
-            download(f"{data['chirps_url']}/{date.year}/{name}.gz", compressed)
-        with gzip.open(compressed, "rb") as source, raster.open("wb") as target:
-            shutil.copyfileobj(source, target)
-        try:
-            with rasterio.open(raster) as source:
-                if source.crs.to_epsg() != 4326:
-                    raise ValueError("CHIRPS raster must use EPSG:4326")
-                points = [(r["longitude"], r["latitude"]) for r in data["reaches"]]
-                for reach, sample in zip(data["reaches"], source.sample(points, masked=True)):
-                    if np.ma.is_masked(sample[0]):
-                        raise ValueError(f"CHIRPS nodata at {reach['id']}")
-                    rainfall.append(
-                        {"date": date, "reach_id": reach["id"], "rainfall": float(sample[0])}
-                    )
-        finally:
-            raster.unlink(missing_ok=True)
+    rainfall = chirps_points(data, raw)
     keys = ["date", "reach_id"]
     frame = pd.concat(discharge).merge(pd.concat(weather), on=keys, validate="one_to_one")
-    frame = frame.merge(pd.DataFrame(rainfall), on=keys, validate="one_to_one")
+    frame = frame.merge(rainfall, on=keys, validate="one_to_one")
     frame = frame[frame.date.between(data["start"], data["end"])].sort_values(keys)
     frame.to_parquet(raw / "series.parquet", index=False)
     write_json(

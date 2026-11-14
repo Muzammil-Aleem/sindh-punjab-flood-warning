@@ -1,4 +1,10 @@
 .venv/
+.venv-py39/
+.bootstrap/
+.python/
+.uv-cache/
+.browser-tools/
+.browser-cache/
 __pycache__/
 *.py[cod]
 .pytest_cache/

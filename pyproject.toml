@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sindh-punjab-flood-warning"
 version = "0.1.0"
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.11,<3.12"
 
 [tool.setuptools.packages.find]
 include = ["flood*"]
