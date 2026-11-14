@@ -94,7 +94,6 @@ dvc.yaml                  Pipeline stages
 dvc.lock                  Versioned stage inputs and outputs
 requirements.lock         Pinned runtime dependencies
 requirements-evidence.txt Optional screenshot and Word document tools
-submission/               Submission PDF and editable Word document
 ```
 
 Running the pipeline creates `data/`, `models/` and `reports/`. These are excluded from Git; the pipeline's versioned outputs are stored through DVC.
@@ -111,6 +110,6 @@ make submission    # Generate the four-page PDF
 make document      # Generate the editable Word document
 ```
 
-Document generation uses the local reports and evidence files. `make evidence` needs remote MLflow access and installs its browser tools separately from the training environment. Fill in the group names and roll numbers in the Word document before exporting the final submission PDF.
+Document generation uses the local reports and evidence files. `make evidence` needs remote MLflow access and installs its browser tools separately from the training environment. Generated documents stay in the ignored local `submission/` folder. Fill in the group names and roll numbers in the Word document before exporting the final submission PDF.
 
 [DagsHub project](https://dagshub.com/Muzammil-Aleem/sindh-punjab-flood-warning) · [MLflow tracking server](https://dagshub.com/Muzammil-Aleem/sindh-punjab-flood-warning.mlflow)

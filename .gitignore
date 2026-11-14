@@ -27,7 +27,5 @@ dist/
 build/
 .DS_Store
 reports/
-submission/*
-!submission/flood-warning.pdf
-!submission/flood-warning.docx
+submission/
 /models

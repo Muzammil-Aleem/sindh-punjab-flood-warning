@@ -53,8 +53,6 @@ def main():
         "flood",
         "scripts",
         "tests",
-        "submission/flood-warning.pdf",
-        "submission/flood-warning.docx",
     ]
     run("git", "add", "--", *paths)
     staged = run(
