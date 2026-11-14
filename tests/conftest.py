@@ -10,6 +10,7 @@ import yaml
 def cfg():
     value = yaml.safe_load(Path("params.yaml").read_text())
     value["data"].update(start="2018-01-01", end="2022-12-31")
+    value["split"].update(train_end="2019-12-31", validation_end="2021-12-31")
     value["models"]["random_forest"].update(n_estimators=10, max_depth=4)
     return value
 

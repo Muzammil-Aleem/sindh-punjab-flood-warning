@@ -4,6 +4,7 @@ import pytest
 import xarray as xr
 
 from flood.ingest import extract_thresholds, grib_points
+from flood.ingest import request_path, retrieve, source_path
 
 
 def dataset(variable, timestamps, values):
@@ -86,3 +87,61 @@ def test_threshold_extraction_preserves_provenance(tmp_path, cfg):
     assert frame.threshold.tolist() == [1234.0]
     assert frame.latitude.tolist() == [30.525]
     assert frame.source_url.tolist() == [options["threshold_url"]]
+
+
+def test_interrupted_download_resumes_existing_copernicus_job(tmp_path):
+    class Remote:
+        request_id = "synthetic-test-job"
+        attempts = 0
+
+        def download(self, path):
+            self.attempts += 1
+            if self.attempts == 1:
+                raise ConnectionError("synthetic interrupted transfer")
+            from pathlib import Path
+
+            Path(path).write_bytes(b"synthetic-test-file")
+
+    class Client:
+        submitted = 0
+
+        def __init__(self):
+            self.client = self
+            self.remote = Remote()
+
+        def submit(self, dataset, request):
+            self.submitted += 1
+            return self.remote
+
+        def get_remote(self, identifier):
+            assert identifier == self.remote.request_id
+            return self.remote
+
+    client = Client()
+    target = tmp_path / "source.grib"
+    with pytest.raises(ConnectionError):
+        retrieve(client, "synthetic-test-source", {"year": ["2020"]}, target)
+    assert target.with_suffix(".job.json").exists()
+    retrieve(client, "synthetic-test-source", {"year": ["2020"]}, target)
+    assert client.submitted == 1
+    assert target.read_bytes() == b"synthetic-test-file"
+    retrieve(client, "synthetic-test-source", {"year": ["2020"]}, target)
+    assert client.submitted == 1
+
+
+def test_reuses_complete_larger_region_cache(tmp_path):
+    request = {"year": ["2020"], "area": [31.0, 68.0, 25.0, 71.25]}
+    previous = [34.0, 67.0, 24.0, 74.0]
+    cached = request_path(tmp_path, "glofas", "2020", {**request, "area": previous})
+    cached.write_bytes(b"synthetic-source-cache")
+    assert source_path(tmp_path, "glofas", "2020", request, [previous]) == cached
+
+
+def test_prefers_resuming_an_already_submitted_request(tmp_path):
+    request = {"year": ["2020"], "area": [31.0, 68.0, 25.0, 71.25]}
+    previous = [34.0, 67.0, 24.0, 74.0]
+    cached = request_path(tmp_path, "glofas", "2020", {**request, "area": previous})
+    cached.write_bytes(b"synthetic-source-cache")
+    preferred = request_path(tmp_path, "glofas", "2020", request)
+    preferred.with_suffix(".job.json").write_text('{"id": "synthetic-test-job"}')
+    assert source_path(tmp_path, "glofas", "2020", request, [previous]) == preferred

@@ -29,13 +29,30 @@ def retrieve(client, dataset, request, target):
     if target.exists():
         return
     temporary = target.with_suffix(".partial")
-    client.retrieve(dataset, request, str(temporary))
+    job_path = target.with_suffix(".job.json")
+    if job_path.exists():
+        remote = client.client.get_remote(json.loads(job_path.read_text())["id"])
+    else:
+        remote = client.client.submit(dataset, request)
+        write_json(job_path, {"id": remote.request_id, "dataset": dataset, "request": request})
+    remote.download(str(temporary))
     temporary.replace(target)
 
 
 def request_path(raw, prefix, month, request):
     signature = hashlib.sha256(json.dumps(request, sort_keys=True).encode()).hexdigest()[:16]
     return raw / f"{prefix}-{month}-{signature}.grib"
+
+
+def source_path(raw, prefix, period, request, cache_areas):
+    preferred = request_path(raw, prefix, period, request)
+    if preferred.exists() or preferred.with_suffix(".job.json").exists():
+        return preferred
+    for area in cache_areas:
+        candidate = request_path(raw, prefix, period, {**request, "area": area})
+        if candidate.exists():
+            return candidate
+    return preferred
 
 
 def extract_thresholds(path, data):
@@ -126,8 +143,22 @@ def ingest():
     required("EWDS_API_KEY")
     raw = Path("data/raw")
     raw.mkdir(parents=True, exist_ok=True)
-    cds = cdsapi.Client(url="https://cds.climate.copernicus.eu/api", key=required("CDSAPI_KEY"))
-    ewds = cdsapi.Client(url="https://ewds.climate.copernicus.eu/api", key=required("EWDS_API_KEY"))
+    downloads = Path("data/downloads")
+    downloads.mkdir(parents=True, exist_ok=True)
+    cds = cdsapi.Client(
+        url="https://cds.climate.copernicus.eu/api",
+        key=required("CDSAPI_KEY"),
+        timeout=180,
+        retry_max=5,
+        sleep_max=30,
+    )
+    ewds = cdsapi.Client(
+        url="https://ewds.climate.copernicus.eu/api",
+        key=required("EWDS_API_KEY"),
+        timeout=180,
+        retry_max=5,
+        sleep_max=30,
+    )
     dates = pd.date_range(data["start"], data["end"], freq="D")
     discharge, weather = [], []
     discharge_dates = dates
@@ -150,7 +181,7 @@ def ingest():
             "variable": ["average_river_discharge_in_the_last_24_hours"],
             "timespan": "time_mean",
         }
-        glofas = request_path(raw, "glofas", month, request)
+        glofas = source_path(downloads, "glofas", month, request, data.get("cache_areas", []))
         retrieve(ewds, "cems-glofas-historical", request, glofas)
         discharge.append(
             grib_points(
@@ -174,7 +205,7 @@ def ingest():
             "variable": ["2m_temperature", "volumetric_soil_water_layer_1"],
             "time": [f"{hour:02d}:00" for hour in range(24)],
         }
-        era5 = request_path(raw, "era5", month, request)
+        era5 = source_path(downloads, "era5", month, request, data.get("cache_areas", []))
         retrieve(cds, "reanalysis-era5-single-levels", request, era5)
         weather.append(
             grib_points(
@@ -198,6 +229,7 @@ def ingest():
             },
             "glofas_version": data["glofas_version"],
             "thresholds_sha256": digest("data/auxiliary/thresholds.csv"),
+            "downloads": {p.name: digest(p) for p in sorted(downloads.glob("*.grib"))},
             "files": {
                 p.name: digest(p)
                 for p in sorted(raw.iterdir())

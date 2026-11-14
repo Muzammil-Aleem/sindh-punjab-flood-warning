@@ -42,6 +42,10 @@ def main():
     registry = json.loads(Path("reports/registry.json").read_text())
     validation = json.loads(Path("reports/validation.json").read_text())
     evidence = Path("submission/evidence")
+    capture = json.loads((evidence / "capture.json").read_text())
+    viewer_note = ""
+    if capture["viewer"] == "official_mlflow_client":
+        viewer_note = " Screenshots use the official MLflow frontend connected read-only to the hosted DagsHub APIs; no local tracking datastore is used."
     required = [evidence / name for name in ["runs.png", "registry.png", "dvc_dag.png"]]
     missing = [str(path) for path in required if not path.is_file()]
     if missing:
@@ -82,7 +86,7 @@ def main():
         )
         paragraph(
             fig,
-            "Validation rejects schema changes, missing or infinite observations, duplicate reach-days, gaps in daily coverage, invalid physical ranges and inconsistent threshold versions. Raw sources, validated point series, engineered datasets and trained artifacts are tracked as DVC pipeline outputs; credentials, data and model weights are excluded from Git.",
+            "Validation rejects schema changes, missing or infinite observations, duplicate reach-days, gaps in daily coverage, invalid physical ranges and inconsistent threshold versions. Source point observations, validated series, engineered datasets and trained artifacts are tracked as DVC pipeline outputs. Original GRIB archives are retained in a reusable download cache and fingerprinted in the source manifest; credentials, data and model weights are excluded from Git.",
             0.41,
         )
         paragraph(
@@ -101,7 +105,8 @@ def main():
         screenshot(fig, evidence / "runs.png", [0.05, 0.28, 0.9, 0.42])
         paragraph(
             fig,
-            "Persistence, class-weighted logistic regression and a class-weighted random forest are evaluated. Each remote MLflow run records estimator parameters, split settings, dataset fingerprints, validation and test metrics, the model signature, dependency versions, source manifests and evaluation plots.",
+            "Persistence, class-weighted logistic regression and a class-weighted random forest are evaluated. Each remote MLflow run records estimator parameters, split settings, dataset fingerprints, validation and test metrics, the model signature, dependency versions, source manifests and evaluation plots."
+            + viewer_note,
             0.22,
         )
         pdf.savefig(fig)

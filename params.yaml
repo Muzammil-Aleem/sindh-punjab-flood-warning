@@ -1,5 +1,5 @@
 data:
-  start: '2017-01-01'
+  start: '2010-01-01'
   end: '2022-12-31'
   glofas_version: version_4_0
   threshold_return_period: 2
@@ -7,7 +7,8 @@ data:
   threshold_variable: rl_2.0
   threshold_sha256: e0e69028080ff0daa9df7ee68b9b01162ac42e03610d020217e3bfb0b44b7fa7
   maximum_grid_distance: 0.1
-  area: [34.0, 67.0, 24.0, 74.0]
+  area: [31.0, 68.0, 25.0, 71.25]
+  cache_areas: [[34.0, 67.0, 24.0, 74.0]]
   chirps_url: https://climateserv.servirglobal.net/api
   reaches:
     - {id: indus_taunsa, province: Punjab, latitude: 30.52, longitude: 70.85}
@@ -26,7 +27,7 @@ features:
   horizons: [3, 4, 5, 6, 7]
   sequence_length: 30
 split:
-  train_end: '2019-12-31'
+  train_end: '2014-12-31'
   validation_end: '2021-12-31'
 models:
   seed: 42

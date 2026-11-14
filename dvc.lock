@@ -9,8 +9,8 @@ stages:
       size: 1275
     - path: flood/ingest.py
       hash: md5
-      md5: 586511a432f1598419fb95e0cf233a38
-      size: 8451
+      md5: 09e8b3fb380924f8daa31e297a2dc390
+      size: 9579
     - path: flood/rainfall.py
       hash: md5
       md5: 17a322ed9f97dba291c9c102ad7a8383
@@ -30,7 +30,7 @@ stages:
     params:
       params.yaml:
         data:
-          start: '2017-01-01'
+          start: '2010-01-01'
           end: '2022-12-31'
           glofas_version: version_4_0
           threshold_return_period: 2
@@ -40,10 +40,15 @@ stages:
           threshold_sha256: e0e69028080ff0daa9df7ee68b9b01162ac42e03610d020217e3bfb0b44b7fa7
           maximum_grid_distance: 0.1
           area:
-          - 34.0
-          - 67.0
-          - 24.0
-          - 74.0
+          - 31.0
+          - 68.0
+          - 25.0
+          - 71.25
+          cache_areas:
+          - - 34.0
+            - 67.0
+            - 24.0
+            - 74.0
           chirps_url: https://climateserv.servirglobal.net/api
           reaches:
           - id: indus_taunsa
